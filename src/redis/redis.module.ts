@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 @Module({
 	providers: [
 		{
-            provide: 'REDIS_CLIENT',
+			provide: 'REDIS_CLIENT',
 			useFactory: () => {
 				return new Redis({
 					password: process.env.REDIS_PASSWORD,

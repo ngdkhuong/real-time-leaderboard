@@ -4,9 +4,9 @@ import {
 	ArgumentsHost,
 	HttpException,
 	HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { CustomException } from '../exceptions/custom.exception';
+} from "@nestjs/common";
+import {Request, Response} from "express";
+import {CustomException} from "../exceptions/custom.exception";
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -16,7 +16,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		const request = ctx.getRequest<Request>();
 
 		let status = HttpStatus.INTERNAL_SERVER_ERROR;
-		let message = 'Internal server error';
+		let message = "Internal server error";
 		let error: any = null;
 
 		if (exception instanceof CustomException) {

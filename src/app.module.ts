@@ -1,13 +1,19 @@
-import {Module, MiddlewareConsumer, RequestMethod} from "@nestjs/common";
-import {AppController} from "./app.controller";
-import {AppService} from "./app.service";
-import {TypeOrmModule} from "@nestjs/typeorm";
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import {ConfigModule} from "@nestjs/config";
-import {AppDataSource} from "./data-source";
-import {LoggerMiddleware} from "./common/middlewares/logger.middleware";
-import { UserModule } from "./user/user.module";
-import { RedisService } from "./redis/redis.service";
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
+import { AppDataSource } from './data-source';
+import { UserModule } from './user/user.module';
+import { GameModule } from './game/game.module';
+import { ScoreModule } from './score/score.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { TournamentModule } from './tournament/tournament.module';
 
 @Module({
 	imports: [
@@ -15,15 +21,31 @@ import { RedisService } from "./redis/redis.service";
 			isGlobal: true,
 		}),
 		TypeOrmModule.forRoot(AppDataSource.options),
+		AuthModule,
 		UserModule,
+		GameModule,
+		ScoreModule,
+		ThrottlerModule.forRoot([
+			{
+				ttl: 60, // time window in seconds
+				limit: 10, // number of maximum requests in the TTL window
+			},
+		]),
+		TournamentModule,
 	],
 	controllers: [AppController],
-	providers: [AppService, RedisService],
+	providers: [
+		AppService,
+		{
+			provide: APP_GUARD,
+			useClass: ThrottlerGuard,
+		},
+	],
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {
 		consumer
 			.apply(LoggerMiddleware)
-			.forRoutes({path: "*", method: RequestMethod.ALL});
+			.forRoutes({ path: '*', method: RequestMethod.ALL });
 	}
 }
