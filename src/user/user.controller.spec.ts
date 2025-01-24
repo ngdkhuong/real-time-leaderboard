@@ -9,9 +9,14 @@ describe("UserController", () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [UserController],
 			providers: [UserService],
-		}).compile();
+		})
+		.useMocker(() => {
+            controller = module.get<UserController>(UserController);
+		})
+		
+		.compile()
 
-		controller = module.get<UserController>(UserController);
+		
 	});
 
 	it("should be defined", () => {
